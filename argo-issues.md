@@ -15,3 +15,31 @@ data:
   policy.default: 'role:admin'
   scopes: '[groups]'
  ``` 
+ 
+ ## Cannot create project nor application
+ 
+ While trying to create project I got the following error:
+ 
+ ```
+ Unable to create project: json: cannot unmarshal object into Go struct field ApplicationDestination.project.spec.destinations.server of type string
+ ```
+ 
+  And also while creating application the following one:
+  
+  ```
+  Unable to load data: configmap "argocd-gpg-keys-cm" not found
+  ```
+Solved by manually creating "argocd-gpg-keys-cm" config map -  bug explained here - https://github.com/argoproj-labs/argocd-operator/issues/191
+
+Following cm solved the issue:
+```
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: argocd-gpg-keys-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-gpg-keys-cm
+    app.kubernetes.io/part-of: argocd
+
+```

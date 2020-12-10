@@ -43,3 +43,33 @@ metadata:
     app.kubernetes.io/part-of: argocd
 
 ```
+
+## Cannot add cluster via UI, only avaialbe via cli
+https://github.com/argoproj/argo-cd/issues/3551
+
+Install argocd cli. 
+Loging to argocd using sso:
+```
+argocd login --sso argocd-server-argocd.mycluster
+WARNING: server certificate had error: x509: certificate signed by unknown authority. Proceed insecurely (y/n)? y
+Opening browser for authentication
+```
+Login to openshift cluster using `oc`
+
+Issue:
+```
+argocd cluster add
+```
+to see available clusters
+```
+argocd cluster add stocktrader/clustername:port/YOURUSER
+time="2020-12-10T16:21:15+01:00" level=info msg="ServiceAccount \"argocd-manager\" created in namespace \"kube-system\""
+time="2020-12-10T16:21:15+01:00" level=info msg="ClusterRole \"argocd-manager-role\" created"
+time="2020-12-10T16:21:15+01:00" level=info msg="ClusterRoleBinding \"argocd-manager-role-binding\" created"
+Cluster 'https://clusterName:port' added
+
+```
+
+
+
+

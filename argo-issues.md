@@ -62,7 +62,7 @@ argocd cluster add
 ```
 to see available clusters
 ```
-argocd cluster add stocktrader/clustername:port/YOURUSER
+argocd cluster add stocktrader/clustername:port/YOURUSER  --name clusterNameForArgo
 time="2020-12-10T16:21:15+01:00" level=info msg="ServiceAccount \"argocd-manager\" created in namespace \"kube-system\""
 time="2020-12-10T16:21:15+01:00" level=info msg="ClusterRole \"argocd-manager-role\" created"
 time="2020-12-10T16:21:15+01:00" level=info msg="ClusterRoleBinding \"argocd-manager-role-binding\" created"

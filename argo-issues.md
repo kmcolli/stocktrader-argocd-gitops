@@ -82,5 +82,47 @@ Cluster 'https://clusterName:port' added
 ```
 
 
+Issue:
+
+```
+services is forbidden: User "system:serviceaccount:argocd:argocd-application-controller" cannot create resource "services" in API group "" in the namespace "stocktrader-argocd-test"
+```
+
+ArgoCD user cannot edit namespaces.
+
+Create cluster role:
+```
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: argocd-application-controller
+  labels:
+    app: argocd
+    app.kubernetes.io/instance: argocd-rbac
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+      
+```      
+And cluster role binding:
+
+```
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: argocd-application-controller
+subjects:
+  - kind: ServiceAccount
+    name: argocd-application-controller
+    namespace: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-application-controller
+```
 
 

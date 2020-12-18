@@ -48,15 +48,26 @@ metadata:
 https://github.com/argoproj/argo-cd/issues/3551
 
 Install argocd cli. 
-Loging to argocd using sso:
+Loging to argocd using sso  (add : `--grpc-web` if using tls edge termination not passthrough)
 ```
 argocd login --sso argocd-server-argocd.mycluster
 WARNING: server certificate had error: x509: certificate signed by unknown authority. Proceed insecurely (y/n)? y
 Opening browser for authentication
 ```
+
+
+
 Login to openshift cluster using `oc`
 
-Issue:
+to see already configured clusters type:
+
+```
+argocd cluster list
+SERVER                                                  NAME         VERSION  STATUS   MESSAGE
+https://kubernetes.default.svc                          in-cluster            Unknown  Cluster has no application and not being monitored.
+```
+
+to see available clusters type :
 ```
 argocd cluster add
 ```

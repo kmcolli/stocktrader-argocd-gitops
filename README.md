@@ -45,3 +45,16 @@ spec:
 - configure project
 
 - configure applications
+
+
+## configure pull secret to local quay registry
+Go to the robot account: 
+
+https://quay-quay-quay.mycluster-us-sout-363772-a01ee4194ed985a1e32b1d96fd4ae346-0000.us-south.containers.appdomain.cloud/organization/cicd/teams/cicd
+
+Click account and `Kubernetes secret`.
+
+Copy secret to all target namespaces in all clusters that should have access to that registry
+
+
+

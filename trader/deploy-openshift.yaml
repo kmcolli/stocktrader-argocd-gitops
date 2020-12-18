@@ -69,7 +69,7 @@ spec:
         imagePullPolicy: Always
         readinessProbe:
           httpGet:
-            path: /health/ready
+            path: /health/live
             port: 9080
           initialDelaySeconds: 30
           periodSeconds: 15

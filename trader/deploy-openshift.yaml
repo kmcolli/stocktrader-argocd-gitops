@@ -19,7 +19,11 @@ metadata:
   name: trader
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: trader  
   template:
+    metadata:
     metadata:
       labels:
         app: trader
@@ -65,7 +69,7 @@ spec:
         imagePullPolicy: Always
         readinessProbe:
           httpGet:
-            path: /health/ready
+            path: /health/live
             port: 9080
           initialDelaySeconds: 30
           periodSeconds: 15

@@ -1,0 +1,25 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  labels:
+    app: agrocd-trader-pipeline
+  name: agrocd-trader-pipeline
+spec:
+  params:
+    - description: The git revision
+      name: gitrevision
+    - description: The git repository url
+      name: gitrepositoryurl
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: agrocd-trader-pipeline-
+      spec:
+        params:
+          - name: git-url
+            value: $(params.gitrepositoryurl)
+          - name: git-revision
+            value: $(params.gitrevision)
+        pipelineRef:
+          name: agrocd-trader-pipeline

@@ -27,7 +27,7 @@ spec:
     metadata:
       labels:
         app: trader
-        cicd: argocd
+        cicd: argocd-test5
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9080"

@@ -1,0 +1,16 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: gitops-repo
+  labels:
+    app: stocktrader-argocd-gitops
+    group: pipeline
+    type: git
+data:
+  branch-production: production
+  branch-qa: qa
+  branch-test: test
+  host: github.com
+  org: stocktrader-ops
+  repo: stocktrader-argocd-gitops
+  url: 'https://github.com/stocktrader-ops/stocktrader-argocd-gitops.git'

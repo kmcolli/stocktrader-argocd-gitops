@@ -10,7 +10,7 @@ spec:
   triggers:
     - bindings:
         - kind: TriggerBinding
-          name: nodejs-ex
+          name: nodejs-exagrocd-trader-pipeline
       interceptors:
         - cel:
             filter: >-

@@ -8,6 +8,8 @@ Files:
 - ibm-setup-v2-1-26.yaml - setup task definition
 - ibm-gitops-v2-1-26.yaml - gitops task definition
 - ibm-git-pullrequest-v0-0-1 - pull request task definition
+- gitops-repo-cm.yaml - config map with gitops repository params
+- git-credentials-secret.yaml - secret with username and token for gitops repo
 - agrocd-trader-pipeline-listener.yaml - listener definition
 - agrocd-trader-pipeline-template.yaml - trigger template
 - agrocd-trader-pipeline-binding.yaml - trigger binding

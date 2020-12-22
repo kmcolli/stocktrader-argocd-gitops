@@ -1,0 +1,322 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    app.openshift.io/description: >-
+      Publishes the helm chart configuration to the provided gitops repo to
+      trigger downstream deployments
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/IBM/ibm-garage-tekton-tasks'
+    description: >-
+      Publishes the helm chart configuration to the provided gitops repo to
+      trigger downstream deployments
+  name: ibm-gitops-v2-1-26
+  namespace: stocktrader-argocd-cicd
+  labels:
+    version: 2.1.26
+spec:
+  params:
+    - default: ''
+      name: app-name
+      type: string
+    - name: git-url
+      type: string
+    - default: master
+      name: git-revision
+      type: string
+    - default: /source
+      name: source-dir
+      type: string
+    - default: manifests
+      name: manifest-dir
+      type: string
+    - default: ''
+      name: subdir
+      type: string
+    - default: ''
+      name: parentdir
+      type: string
+    - default: 'ibmgaragecloud/ibmcloud-dev:1.2.2'
+      name: tools-image
+      type: string
+  stepTemplate:
+    name: ''
+    resources: {}
+    volumeMounts:
+      - mountPath: $(params.source-dir)
+        name: source
+  steps:
+    - env:
+        - name: GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: git-credentials
+              optional: true
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: git-credentials
+              optional: true
+      image: alpine/git
+      name: git-clone
+      resources: {}
+      script: |
+        set +x
+        if [[ -n "${GIT_USERNAME}" ]] && [[ -n "${GIT_PASSWORD}" ]]; then
+            git clone "https://${GIT_USERNAME}:${GIT_PASSWORD}@$(echo $(params.git-url) | awk -F 'https://' '{print $2}')" $(params.source-dir)
+        else
+            set -x
+            git clone $(params.git-url) $(params.source-dir)
+        fi
+        set -x
+        cd $(params.source-dir)
+        git checkout $(params.git-revision)
+        cd ..
+    - env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: git-credentials
+              optional: true
+        - name: GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: git-credentials
+              optional: true
+        - name: GIT_USERNAME_CD
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: gitops-cd-secret
+              optional: true
+        - name: GIT_PASSWORD_CD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: gitops-cd-secret
+              optional: true
+        - name: GIT_PARENT_DIR
+          valueFrom:
+            configMapKeyRef:
+              key: parentdir
+              name: gitops-repo
+              optional: true
+        - name: GIT_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              key: protocol
+              name: gitops-repo
+              optional: true
+        - name: GIT_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: host
+              name: gitops-repo
+              optional: true
+        - name: GIT_ORG
+          valueFrom:
+            configMapKeyRef:
+              key: org
+              name: gitops-repo
+              optional: true
+        - name: GIT_REPO
+          valueFrom:
+            configMapKeyRef:
+              key: repo
+              name: gitops-repo
+              optional: true
+        - name: GIT_BRANCH_TEST
+          valueFrom:
+            configMapKeyRef:
+              key: branch-test
+              name: gitops-repo
+              optional: true
+        - name: GIT_BRANCH_QA
+          valueFrom:
+            configMapKeyRef:
+              key: branch-qa
+              name: gitops-repo
+              optional: true
+        - name: GIT_BRANCH_PROD
+          valueFrom:
+            configMapKeyRef:
+              key: branch-production
+              name: gitops-repo
+              optional: true
+      image: alpine/git
+      name: gitops
+      resources: {}
+      script: >
+        set -x
+
+
+        APP_NAME="$(params.app-name)"
+
+        SUBDIR="$(params.subdir)"
+
+        if [[ -z "${SUBDIR}" ]]; then
+          SUBDIR="${APP_NAME}"
+        fi
+
+        if [[ -n "$(params.parentdir)" ]]; then
+          PARENT_DIR="$(params.parentdir)"
+        elif [[ -n "${GIT_PARENT_DIR}" ]] && [[ "${GIT_PARENT_DIR}" = "bash -c"*
+        ]]; then
+          PARENT_DIR=$(eval $GIT_PARENT_DIR | tail -n 1)
+        elif [[ -n "${GIT_PARENT_DIR}" ]]; then
+          PARENT_DIR="${GIT_PARENT_DIR}"
+        else
+          PARENT_DIR="."
+        fi
+
+        SUBDIR="${PARENT_DIR}/${SUBDIR}"
+
+
+        PROTOCOL="${GIT_PROTOCOL}"
+
+        if [[ -z "${PROTOCOL}" ]]; then
+          PROTOCOL="https"
+        fi
+
+
+        if [[ -z "${GIT_HOST}" ]] || [[ -z "${GIT_ORG}" ]] || [[ -z
+        "${GIT_REPO}" ]]; then
+            echo "GitOps repo has not been configured with confimap gitops-repo. Skipping trigger step"
+            exit 0
+        fi
+
+
+        set +x
+
+        if [[ -n "${GIT_USERNAME_CD}" ]]; then
+          GIT_AUTH_USER="${GIT_USERNAME_CD}"
+          GIT_AUTH_PWD="${GIT_PASSWORD_CD}"
+        elif [[ -n "${GIT_USERNAME}" ]]; then
+          GIT_AUTH_USER="${GIT_USERNAME}"
+          GIT_AUTH_PWD="${GIT_PASSWORD}"
+        else
+          echo "Credentials for GitOps repo not set in secret gitops-cd-secret or git-credentials"
+          exit 1
+        fi
+
+        set -x
+
+        BRANCH_CMD=""
+
+        # TEST branch
+
+        if [[ -n "${GIT_BRANCH_TEST}" ]]; then
+          BRANCH_CMD="-b ${GIT_BRANCH_TEST}"
+        fi
+
+
+        git config --global user.email "gitops@cloudnativetoolkit.dev"
+
+        git config --global user.name "Cloud Native Toolkit Pipeline"
+
+        echo "git clone ${BRANCH_CMD}
+        ${PROTOCOL}://${GIT_AUTH_USER}:xxxx@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
+
+        set +x
+
+        GIT_URL="${PROTOCOL}://${GIT_AUTH_USER}:${GIT_AUTH_PWD}@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
+
+        git clone ${BRANCH_CMD} ${GIT_URL} gitops_cd
+
+        set -x
+
+        cd gitops_cd
+
+        if [ -d "$SUBDIR" ]; then
+          ### Take action if $SUBDIR exists ###
+          echo "Directory exists ${SUBDIR}..."
+        else
+          ###  Control will jump here if $SUBDIR does NOT exists ###
+          echo "Directory ${SUBDIR} not found. Creating..."
+          mkdir -p "${SUBDIR}"
+        fi
+
+          ## copy manifests from source dir
+
+          echo "Copying dir:"
+          ls -la $(params.source-dir)/$(params.manifest-dir)
+          
+          cp -r $(params.source-dir)/$(params.manifest-dir)/* ${SUBDIR}
+
+
+          if [[ $(git status -s | wc -l) -eq 0 ]]; then
+            echo "No changes"
+            exit 0
+          fi
+
+
+        git add "${SUBDIR}/"
+
+        git commit -m "Updates ${APP_NAME} to ${VERSION}"
+
+        git push -v
+
+        # QA branch
+
+        if [[ -n "${GIT_BRANCH_QA}" ]]; then
+          BRANCH_CMD="-b ${GIT_BRANCH_QA}"
+
+
+
+          git config --global user.email "gitops@cloudnativetoolkit.dev"
+
+          git config --global user.name "Cloud Native Toolkit Pipeline"
+
+          echo "git clone ${BRANCH_CMD}
+          ${PROTOCOL}://${GIT_AUTH_USER}:xxxx@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
+
+          set +x
+
+          GIT_URL="${PROTOCOL}://${GIT_AUTH_USER}:${GIT_AUTH_PWD}@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
+
+          git clone ${BRANCH_CMD} ${GIT_URL} gitops_cd
+
+          set -x
+
+          cd gitops_cd
+
+          if [ -d "$SUBDIR" ]; then
+            ### Take action if $SUBDIR exists ###
+            echo "Directory exists ${SUBDIR}..."
+          else
+            ###  Control will jump here if $SUBDIR does NOT exists ###
+            echo "Directory ${SUBDIR} not found. Creating..."
+            mkdir -p "${SUBDIR}"
+          fi
+
+          ## copy manifests from source dir
+
+          echo "Copying dir:"
+          ls -la $(params.source-dir)/$(params.manifest-dir)
+          
+          cp -r $(params.source-dir)/$(params.manifest-dir)/* ${SUBDIR}
+
+
+          if [[ $(git status -s | wc -l) -eq 0 ]]; then
+            echo "No changes"
+          fi
+
+
+          git add "${SUBDIR}/"
+
+          git commit -m "Updates ${APP_NAME} to ${VERSION}"
+
+          git push -v
+        fi
+      workingDir: $(params.source-dir)
+  volumes:
+    - emptyDir: {}
+      name: source

@@ -15,7 +15,7 @@ spec:
         - cel:
             filter: >-
               header.match('X-GitHub-Event', 'push') && body.ref ==
-              'refs/heads/master'
+              'refs/heads/main'
       name: agrocd-trader-pipeline
       template:
         name: agrocd-trader-pipeline

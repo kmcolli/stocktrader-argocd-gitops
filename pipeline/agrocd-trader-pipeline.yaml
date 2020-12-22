@@ -1,0 +1,52 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: agrocd-trader-pipeline
+spec:
+  params:
+    - default: 'https://github.com/stocktrader-ops/trader.git'
+      description: The url for the git repository
+      name: git-url
+      type: string
+    - default: main
+      description: 'The git revision (branch, tag, or sha) that should be built'
+      name: git-revision
+      type: string
+  tasks:
+    - name: setup
+      params:
+        - name: git-url
+          value: $(params.git-url)
+        - name: git-revision
+          value: $(params.git-revision)
+      taskRef:
+        kind: Task
+        name: ibm-setup-v2-1-26
+    - name: gitops
+      params:
+        - name: app-name
+          value: $(tasks.setup.results.app-name)
+        - name: git-url
+          value: $(params.git-url)
+        - name: git-revision
+          value: $(params.git-revision)
+        - name: tools-image
+          value: $(tasks.setup.results.tools-image)
+      runAfter:
+        - setup
+      taskRef:
+        kind: Task
+        name: ibm-gitops-v2-1-26
+    - name: git-pullrequest-prod
+      params:
+        - name: app-name
+          value: $(tasks.setup.results.app-name)
+        - name: tools-image
+          value: $(tasks.setup.results.tools-image)
+        - name: target-branch
+          value: production
+      runAfter:
+        - gitops
+      taskRef:
+        kind: Task
+        name: ibm-git-pullrequest-v0-0-1

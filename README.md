@@ -81,5 +81,11 @@ Click account and `Kubernetes secret`.
 
 Copy secret to all target namespaces in all clusters that should have access to that registry
 
+# configure pull role for local cluster
 
+```
+oc policy add-role-to-user system:image-puller system:serviceaccount:stocktrader-test:default --namespace=stock-quote-quarkus
+oc policy add-role-to-user system:image-puller system:serviceaccount:stocktrader-qa:default --namespace=stock-quote-quarkus
+oc policy add-role-to-user system:image-puller system:serviceaccount:stocktrader-prod:default --namespace=stock-quote-quarkus
+```
 

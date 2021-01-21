@@ -82,7 +82,7 @@ Cluster 'https://clusterName:port' added
 ```
 
 
-Issue:
+## ArgoCD user cannot edit namespaces.
 
 ```
 services is forbidden: User "system:serviceaccount:argocd:argocd-application-controller" cannot create resource "services" in API group "" in the namespace "stocktrader-argocd-test"

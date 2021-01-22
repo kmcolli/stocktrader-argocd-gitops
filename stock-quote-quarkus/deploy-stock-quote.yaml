@@ -1,9 +1,6 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  annotations:
-    image.openshift.io/triggers: >-
-      [{"from":{"kind":"ImageStreamTag","name":"stock-quote-quarkus:basic-auth"},"fieldPath":"spec.template.spec.containers[?(@.name==\"stock-quote-quarkus\")].image"}]
   name: stock-quote-quarkus
   labels:
     app: stock-quote-quarkus
@@ -20,7 +17,7 @@ spec:
     spec:
       containers:
         - name: stock-quote-quarkus
-          image: stock-quote-quarkus
+          image: image-registry.openshift-image-registry.svc:5000/stock-quote-quarkus/stock-quote-quarkus:basic-auth
           ports:
             - containerPort: 8080
               protocol: TCP

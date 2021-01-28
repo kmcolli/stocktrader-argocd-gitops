@@ -4,7 +4,7 @@ Devops git for Stocktrader app.
 
 Each branch in the repo matches one of the environments:
 - test - test environment in the local argo cluster
-- uat - uat environment in the remote cluster
+- qa - qa environment in the local cluster
 - production - prod environmet in the remote cluster
 
 Steps:

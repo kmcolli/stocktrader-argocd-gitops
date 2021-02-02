@@ -28,13 +28,15 @@ spec:
       g, argocd-admins, role:admin
     scopes: '[groups]'    
   server:
-    insecure: true
+    insecure: false
     route:
       enabled: true
       tls:
-        termination: edge
+        termination: passthrough
       wildcardPolicy: None    
 ```
+
+In some cases, when self sign certs are not acceptable, you may need to switch security configuration to edge termination and use OCP cert instead of default ArgoCD one. Change to: `insecure: true`  and `termination: edge`
 
 - solve configuration issues - see argo-issues.md
 

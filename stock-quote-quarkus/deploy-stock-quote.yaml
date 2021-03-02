@@ -5,7 +5,7 @@ metadata:
   labels:
     app: stock-quote-quarkus
     deployer: argocd
-    release: 0.0.9
+    release: 0.0.10
 spec:
   replicas: 1
   selector:
@@ -23,6 +23,8 @@ spec:
             - containerPort: 9080
               protocol: TCP
           env:
+            - name: TEST_ENV
+              value: myvalue
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:

@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: agrocd-trader-pipeline
+  name: agrocd-demo-pipeline
 spec:
   params:
-    - default: 'https://github.com/stocktrader-ops/trader.git'
+    - default: 'https://github.com/stocktrader-ops/stock-quote-quarkus.git'
       description: The url for the git repository
       name: git-url
       type: string
@@ -45,6 +45,8 @@ spec:
           value: $(tasks.setup.results.tools-image)
         - name: target-branch
           value: production
+        - name: skip-pull
+          value: 'false'          
       runAfter:
         - gitops
       taskRef:

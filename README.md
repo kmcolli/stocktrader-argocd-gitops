@@ -74,7 +74,8 @@ argocd app create test-trader --repo https://github.com/stocktrader-ops/stocktra
 application 'test-trader' created
 ```
 
-## configure pull secret to local quay registry
+## Configure pull secret to local quay registry
+If you use Quay as image registry perform the following steps:
 Go to the robot account: 
 
 https://quay-quay-quay.mycluster-us-sout-363772-a01ee4194ed985a1e32b1d96fd4ae346-0000.us-south.containers.appdomain.cloud/organization/cicd/teams/cicd
@@ -83,7 +84,7 @@ Click account and `Kubernetes secret`.
 
 Copy secret to all target namespaces in all clusters that should have access to that registry
 
-# configure pull role for local cluster
+## Configure pull role for local cluster
 
 ```
 oc policy add-role-to-user system:image-puller system:serviceaccount:stocktrader-test:default --namespace=stock-quote-quarkus
@@ -91,3 +92,6 @@ oc policy add-role-to-user system:image-puller system:serviceaccount:stocktrader
 oc policy add-role-to-user system:image-puller system:serviceaccount:stocktrader-prod:default --namespace=stock-quote-quarkus
 ```
 
+
+## Simple pipeline configuration
+Simple pipeline configuration is described in the [README](pipeline/README.md).

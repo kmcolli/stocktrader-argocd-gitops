@@ -2,8 +2,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   labels:
-    app: agrocd-trader-pipeline
-  name: agrocd-trader-pipeline
+    app: agrocd-demo-pipeline
+  name: agrocd-demo-pipeline
 spec:
   params:
     - name: gitrevision

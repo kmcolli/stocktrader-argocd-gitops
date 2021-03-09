@@ -1,15 +1,15 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: el-agrocd-trader-pipeline
+  name: el-agrocd-demo-pipeline
   labels:
-    app: el-agrocd-trader-pipeline
+    app: el-agrocd-demo-pipeline
   annotations:
     openshift.io/host.generated: 'true'
 spec:
   to:
     kind: Service
-    name: el-agrocd-trader-pipeline
+    name: el-agrocd-demo-pipeline
     weight: 100
   port:
     targetPort: http-listener

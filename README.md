@@ -46,11 +46,30 @@ In some cases, when self sign certs are not acceptable, you may need to switch s
 argocd login --sso argocd-server-argocd.mycluster
 ```
 
-- Login to target remote ocp cluster using oc, add remote cluster to argo
+- Login to target remote ocp cluster using oc
+- List all authenticated contexts in oc, amd find yours:
+```
+oc config get-contexts
+CURRENT   NAME                                                                                                         CLUSTER                                          AUTHINFO                                                                                         NAMESPACE
+*         stocktrader-preprod/c109-e-us-east-containers-cloud-ibm-com:32310/IAM#grzegorz.smolko@pl.ibm.com             c109-e-us-east-containers-cloud-ibm-com:32310    IAM#grzegorz.smolko@pl.ibm.com/c109-e-us-east-containers-cloud-ibm-com:32310                     stocktrader-preprod
+```
+
+- add remote cluster to argo
 
 ```
 argocd cluster add stocktrader/clustername:port/YOURUSER  --name clusterNameForArgo
+e.g.  argocd cluster add  stocktrader-preprod/c109-e-us-east-containers-cloud-ibm-com:32310/IAM#grzegorz.smolko@pl.ibm.com --name devops-preprod2
 ```
+This will add some settings to remote cluster:
+```
+time="2021-03-10T14:06:59+01:00" level=info msg="ServiceAccount \"argocd-manager\" created in namespace \"kube-system\""
+time="2021-03-10T14:06:59+01:00" level=info msg="ClusterRole \"argocd-manager-role\" created"
+time="2021-03-10T14:06:59+01:00" level=info msg="ClusterRoleBinding \"argocd-manager-role-binding\" created"
+Cluster 'https://c109-e.us-east.containers.cloud.ibm.com:32310' added
+```
+
+Your cluster should be visible now in Argo CD UI, in Settings > Clusters
+
 
 - in repositories add gitops repo
 
@@ -83,6 +102,48 @@ https://quay-quay-quay.mycluster-us-sout-363772-a01ee4194ed985a1e32b1d96fd4ae346
 Click account and `Kubernetes secret`.
 
 Copy secret to all target namespaces in all clusters that should have access to that registry
+
+## Configure OpenShift to expose registry
+Expose registry to outside world:
+```
+oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+```
+You can also change it via console via Custom Resource Definitions > Config (imageregistry.operator.openshift.io) > Instances > cluster
+
+Verify that route was created:
+
+Create service account in source cluster in source project
+```
+oc create serviceaccount img-puller
+```
+Add pull role:
+
+```
+oc policy add-role-to-user system:image-puller system:serviceaccount:stock-quote-quarkus:img-puller
+```
+Find sa tokens:
+```
+oc describe sa img-puller
+Name:                img-puller
+Namespace:           stock-quote-quarkus
+Labels:              <none>
+Annotations:         <none>
+Image pull secrets:  img-puller-dockercfg-sz9jt
+Mountable secrets:   img-puller-token-b597z
+                     img-puller-dockercfg-sz9jt
+Tokens:              img-puller-token-b597z
+                     img-puller-token-mllk4
+Events:              <none>
+```
+
+Get token from serviceaccount.
+
+On target cluster: 
+In the target namespace create pull secret with souce cluster hostname, username=serviceaccount, and password=copied_token
+
+link created secret to default account
+
+oc secrets link default dev-cluster-pull --for=pull
 
 ## Configure pull role for local cluster
 

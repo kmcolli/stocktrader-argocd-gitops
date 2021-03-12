@@ -5,7 +5,7 @@ metadata:
   labels:
     app: stock-quote-quarkus
     deployer: argocd
-    release: 0.0.12
+    release: 0.0.14
 spec:
   replicas: 1
   selector:
@@ -18,13 +18,13 @@ spec:
     spec:
       containers:
         - name: stock-quote-quarkus
-          image: image-registry.openshift-image-registry.svc:5000/stock-quote-quarkus/stock-quote-quarkus:basic-auth
+          image: default-route-openshift-image-registry.dev-900030-a01ee4194ed985a1e32b1d96fd4ae346-0000.us-south.containers.appdomain.cloud/stock-quote-quarkus/stock-quote-quarkus:basic-auth
           ports:
             - containerPort: 9080
               protocol: TCP
           env:
             - name: TEST_ENV
-              value: 'simple pipeline'
+              value: 'remote cluster'
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:

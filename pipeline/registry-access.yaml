@@ -10,3 +10,4 @@ data:
   REGISTRY_USER: username
   REGISTRY_URL: quay.io
   REGISTRY_RELEASE_NAMESPACE: gas_stocktrader
+type: Opaque

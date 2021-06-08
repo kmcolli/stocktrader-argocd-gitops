@@ -1,0 +1,12 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: registry-access
+  labels:
+    app: agrocd-trader-pipeline
+    group: pipeline
+data:
+  REGISTRY_PASSWORD: gittoken
+  REGISTRY_USER: username
+  REGISTRY_URL: quay.io
+  REGISTRY_RELEASE_NAMESPACE: gas_stocktrader

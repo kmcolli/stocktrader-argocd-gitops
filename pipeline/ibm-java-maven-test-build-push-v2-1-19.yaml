@@ -52,7 +52,7 @@ spec:
     - name: STORAGE_DRIVER
       description: Set buildah storage driver
       default: overlay      
-    - name: image-from
+    - name: image-to
       default: ""
   stepTemplate:
     name: ''

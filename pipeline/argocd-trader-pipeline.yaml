@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: agrocd-trader-pipeline
+spec:
+  params:
+    - default: 'https://github.com/stocktrader-ops/trader.git'
+      description: The url for the git repository
+      name: git-url
+      type: string
+    - default: main
+      description: 'The git revision (branch, tag, or sha) that should be built'
+      name: git-revision
+      type: string
+  tasks:
+    - name: setup
+      params:
+        - name: git-url
+          value: $(params.git-url)
+        - name: git-revision
+          value: $(params.git-revision)
+      taskRef:
+        kind: Task
+        name: ibm-setup-v2-1-26
+    - name: build-push
+      params:
+        - name: git-url
+          value: $(tasks.setup.results.git-url)
+        - name: git-revision
+          value: $(tasks.setup.results.git-revision)
+        - name: source-dir
+          value: $(tasks.setup.results.source-dir)
+        - name: app-name
+          value: $(tasks.setup.results.app-name)
+        - name: image-server
+          value: $(tasks.setup.results.image-server)
+        - name: image-namespace
+          value: $(tasks.setup.results.image-namespace)
+        - name: image-repository
+          value: $(tasks.setup.results.image-repository)
+        - name: image-tag
+          value: $(tasks.setup.results.image-tag)          
+      runAfter:
+        - setup
+      taskRef:
+        kind: Task
+        name: ibm-java-maven-test-build-push-v2-1-19

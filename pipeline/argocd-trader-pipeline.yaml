@@ -39,7 +39,9 @@ spec:
         - name: image-repository
           value: $(tasks.setup.results.image-repository)
         - name: image-tag
-          value: $(tasks.setup.results.image-tag)          
+          value: $(tasks.setup.results.image-tag)    
+        - name: image-to
+          value: $(tasks.setup.results.image-release)          
       runAfter:
         - setup
       taskRef:

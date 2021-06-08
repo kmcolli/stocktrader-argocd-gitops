@@ -52,6 +52,8 @@ spec:
     - name: STORAGE_DRIVER
       description: Set buildah storage driver
       default: overlay      
+    - name: image-from
+      default: ""
   stepTemplate:
     name: ''
     resources: {}
@@ -167,10 +169,11 @@ spec:
       securityContext:
         privileged: true
       script: |
-        APP_IMAGE="$(params.image-server)/$(params.image-namespace)/$(params.image-repository):$(params.image-tag)"
+        APP_IMAGE="$(params.image-to):$(params.image-tag)"
+        # APP_IMAGE="$(params.image-server)/$(params.image-namespace)/$(params.image-repository):$(params.image-tag)"
         buildah --layers --storage-driver=$(params.STORAGE_DRIVER) bud --format=$(params.FORMAT) --tls-verify=$(params.TLSVERIFY) -f $(params.DOCKERFILE) -t ${APP_IMAGE} $(params.CONTEXT)
         set +x
-        if [[ -n "${REGISTRY_USER}" ]] && [[ -n "${REGISTRY_PASSWORD}" ]] && [[ "$(params.image-server)" != "image-registry.openshift-image-registry.svc:5000"  ]]; then
+        if [[ -n "${REGISTRY_USER}" ]] && [[ -n "${REGISTRY_PASSWORD}" ]]; then
           buildah login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}" "$(params.image-server)"
           echo "buildah login -u "${REGISTRY_USER}" -p "xxxxx" "$(params.image-server)""
         fi

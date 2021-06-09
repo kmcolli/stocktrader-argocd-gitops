@@ -106,12 +106,12 @@ spec:
     notification:
       url: http://{{ .Release.Name }}-notification-service:9080/notification
   cloudant:
-      id: CLOUDANTUSER_CHANGE
-      password: CLOUDANTPASS_CHANGE
-      url: https://couchdb-connect-couchdb.devops-prereqs-44-a01ee4194ed985a1e32b1d96fd4ae346-0000.us-east.containers.appdomain.cloud/
-      apiKey: CLOUDANTAPI_CHANGE
-      database: account
-      collector: evidence
+    id: CLOUDANTUSER_CHANGE
+    password: CLOUDANTPASS_CHANGE
+    url: https://couchdb-connect-couchdb.devops-prereqs-44-a01ee4194ed985a1e32b1d96fd4ae346-0000.us-east.containers.appdomain.cloud/
+    apiKey: CLOUDANTAPI_CHANGE
+    database: account
+    collector: evidence
   collector:
     enabled: false
     replicas: 1
@@ -221,8 +221,8 @@ spec:
     maxReplicas: 10
     cpuThreshold: 75
     image:
-      repository: image-registry.openshift-image-registry.svc:5000/stocktrader-dev/trader
-      tag: cicd
+      repository:
+      tag:
   tradr:
     enabled: false
     replicas: 1

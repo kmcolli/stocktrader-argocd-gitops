@@ -125,15 +125,17 @@ spec:
       resources: {}
       script: >
         set -x
+        
         APP_NAME="$(params.app-name)"
+        
         SUBDIR="$(params.subdir)"
+        
         if [[ -z "${SUBDIR}" ]]; then
           SUBDIR="${APP_NAME}"
         fi
         if [[ -n "$(params.parentdir)" ]]; then
           PARENT_DIR="$(params.parentdir)"
-        elif [[ -n "${GIT_PARENT_DIR}" ]] && [[ "${GIT_PARENT_DIR}" = "bash -c"*
-        ]]; then
+        elif [[ -n "${GIT_PARENT_DIR}" ]] && [[ "${GIT_PARENT_DIR}" = "bash -c"* ]]; then
           PARENT_DIR=$(eval $GIT_PARENT_DIR | tail -n 1)
         elif [[ -n "${GIT_PARENT_DIR}" ]]; then
           PARENT_DIR="${GIT_PARENT_DIR}"
@@ -145,8 +147,7 @@ spec:
         if [[ -z "${PROTOCOL}" ]]; then
           PROTOCOL="https"
         fi
-        if [[ -z "${GIT_HOST}" ]] || [[ -z "${GIT_ORG}" ]] || [[ -z
-        "${GIT_REPO}" ]]; then
+        if [[ -z "${GIT_HOST}" ]] || [[ -z "${GIT_ORG}" ]] || [[ -z "${GIT_REPO}" ]]; then
             echo "GitOps repo has not been configured with confimap gitops-repo. Skipping trigger step"
             exit 0
         fi

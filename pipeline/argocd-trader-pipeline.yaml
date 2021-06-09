@@ -47,3 +47,22 @@ spec:
       taskRef:
         kind: Task
         name: ibm-java-maven-test-build-push-v2-1-19
+    - name: gitops
+      params:
+        - name: app-name
+          value: $(tasks.setup.results.app-name)
+        - name: git-url
+          value: $(params.git-url)
+        - name: git-revision
+          value: $(params.git-revision)
+        - name: tools-image
+          value: $(tasks.setup.results.tools-image)
+        - name: image-tag
+          value: $(tasks.setup.results.image-tag)    
+        - name: image-to
+          value: $(tasks.setup.results.image-release)             
+      runAfter:
+        - build-push
+      taskRef:
+        kind: Task
+        name: ibm-gitops-trader-v2-1-26        

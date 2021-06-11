@@ -1,0 +1,21 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  labels:
+    app: agrocd-trader-pipeline
+    triggers.tekton.dev/release: 0.4.0
+  name: agrocd-trader-pipeline
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: agrocd-trader-pipeline
+      interceptors:
+        - cel:
+            filter: >-
+              header.match('X-GitHub-Event', 'push') && body.ref ==
+              'refs/heads/master'
+      name: agrocd-trader-pipeline
+      template:
+        name: agrocd-trader-pipeline

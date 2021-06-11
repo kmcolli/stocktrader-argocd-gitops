@@ -8,7 +8,7 @@ spec:
       description: The url for the git repository
       name: git-url
       type: string
-    - default: main
+    - default: master
       description: 'The git revision (branch, tag, or sha) that should be built'
       name: git-revision
       type: string

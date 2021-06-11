@@ -29,7 +29,7 @@ spec:
     - default: ''
       name: parentdir
       type: string
-    - default: 'ibmgaragecloud/ibmcloud-dev:1.2.2'
+    - default: 'quay.io/ibmgaragecloud/ibmcloud-dev:v2.0.4'
       name: tools-image
       type: string
     - name: image-tag
@@ -120,7 +120,7 @@ spec:
               key: branch-production
               name: gitops-repo
               optional: true
-      image: alpine/git
+      image: $(params.tools-image)
       name: gitops
       resources: {}
       script: >
@@ -133,6 +133,7 @@ spec:
         if [[ -z "${SUBDIR}" ]]; then
           SUBDIR="${APP_NAME}"
         fi
+
         if [[ -n "$(params.parentdir)" ]]; then
           PARENT_DIR="$(params.parentdir)"
         elif [[ -n "${GIT_PARENT_DIR}" ]] && [[ "${GIT_PARENT_DIR}" = "bash -c"* ]]; then
@@ -142,16 +143,22 @@ spec:
         else
           PARENT_DIR="."
         fi
+
         SUBDIR="${PARENT_DIR}/${SUBDIR}"
+
         PROTOCOL="${GIT_PROTOCOL}"
+
         if [[ -z "${PROTOCOL}" ]]; then
           PROTOCOL="https"
         fi
+
         if [[ -z "${GIT_HOST}" ]] || [[ -z "${GIT_ORG}" ]] || [[ -z "${GIT_REPO}" ]]; then
             echo "GitOps repo has not been configured with confimap gitops-repo. Skipping trigger step"
             exit 0
         fi
+
         set +x
+
         if [[ -n "${GIT_USERNAME_CD}" ]]; then
           GIT_AUTH_USER="${GIT_USERNAME_CD}"
           GIT_AUTH_PWD="${GIT_PASSWORD_CD}"
@@ -162,21 +169,31 @@ spec:
           echo "Credentials for GitOps repo not set in secret gitops-cd-secret or git-credentials"
           exit 1
         fi
+
         set -x
+
         BRANCH_CMD=""
+
         # TEST branch
         if [[ -n "${GIT_BRANCH_TEST}" ]]; then
           BRANCH_CMD="-b ${GIT_BRANCH_TEST}"
         fi
+
         git config --global user.email "gitops@stocktrader.dev"
         git config --global user.name "Stocktrader Pipeline"
+
         echo "git clone ${BRANCH_CMD}
         ${PROTOCOL}://${GIT_AUTH_USER}:xxxx@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
+
         set +x
+
         GIT_URL="${PROTOCOL}://${GIT_AUTH_USER}:${GIT_AUTH_PWD}@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
         git clone ${BRANCH_CMD} ${GIT_URL} gitops_cd
+
         set -x
+
         cd gitops_cd
+
         if [ -d "$SUBDIR" ]; then
           ### Take action if $SUBDIR exists ###
           echo "Directory exists ${SUBDIR}..."
@@ -185,12 +202,22 @@ spec:
           echo "Directory ${SUBDIR} not found. Failing. Directory must exists to update Trader app"
           exit 1
         fi
+
           ## update manifests to new image and tag
-          APP_IMAGE="$(params.image-to):$(params.image-tag)"
+
+          APP_IMAGE="$(params.image-to)"
+
           VERSION="$(params.image-tag)"
           
           echo "print yq version"
-          yq -v
+
+          yq --version
+
+          yq w -i "${SUBDIR}/stocktrader-cr.yaml" spec.trader.image.repository "${APP_IMAGE}"
+  
+          yq w -i "${SUBDIR}/stocktrader-cr.yaml" spec.trader.image.tag "${VERSION}"
+  
+          cat "${SUBDIR}/stocktrader-cr.yaml"          
 
           if [[ $(git status -s | wc -l) -eq 0 ]]; then
             echo "No changes"

@@ -4,16 +4,13 @@ metadata:
   name: ceh
 spec:
   global:
-    vault: false
     auth: basic
     healthCheck: true
     ingress: false
     istio: false
     istioNamespace: mesh
     route: true
-    traceSpec: "*=info"
     jsonLogging: false
-    disableLogFiles: false
     monitoring: true
     specifyCerts: true
     certs: |
@@ -43,17 +40,12 @@ spec:
     id: DBUSER_CHANGE
     password: DBPASS_CHANGE
     port: 31495
-  ingress:
-    address: <your proxy node IP>:443
   jwt:
     audience: stock-trader
     issuer: http://stock-trader.ibm.com
   kafka:
     address: broker-1-63pby2k66qq17x9z.kafka.svc01.us-south.eventstreams.cloud.ibm.com:9093,broker-4-63pby2k66qq17x9z.kafka.svc01.us-south.eventstreams.cloud.ibm.com:9093,broker-3-63pby2k66qq17x9z.kafka.svc01.us-south.eventstreams.cloud.ibm.com:9093,broker-0-63pby2k66qq17x9z.kafka.svc01.us-south.eventstreams.cloud.ibm.com:9093,broker-2-63pby2k66qq17x9z.kafka.svc01.us-south.eventstreams.cloud.ibm.com:9093,broker-5-63pby2k66qq17x9z.kafka.svc01.us-south.eventstreams.cloud.ibm.com:9093
     apiKey: APIKEY_CHANGE
-    accountTopic: account
-    historyTopic: history
-    portfolioTopic: portfolio
     user: KAFKA_USER_CHANGE
   looper:
     enabled: true
@@ -74,16 +66,6 @@ spec:
       repository: ibmstocktrader/broker
       tag: latest
     url: http://{{ .Release.Name }}-broker-service:9080/broker
-  brokerCQRS:
-    enabled: false
-    replicas: 1
-    autoscale: false
-    maxReplicas: 10
-    cpuThreshold: 75
-    image:
-      repository: ibmstocktrader/broker-cqrs
-      tag: latest
-    url: http://{{ .Release.Name }}-broker-cqrs-service:9080/brokerCQRS
   account:
     enabled: true
     replicas: 2
@@ -109,7 +91,6 @@ spec:
     id: CLOUDANTUSER_CHANGE
     password: CLOUDANTPASS_CHANGE
     url: https://couchdb-connect-couchdb.devops-prereqs-44-a01ee4194ed985a1e32b1d96fd4ae346-0000.us-east.containers.appdomain.cloud/
-    apiKey: CLOUDANTAPI_CHANGE
     database: account
     collector: evidence
   collector:

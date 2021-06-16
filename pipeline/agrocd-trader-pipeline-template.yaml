@@ -18,8 +18,8 @@ spec:
       spec:
         params:
           - name: git-url
-            value: $(params.gitrepositoryurl)
+            value: $(tt.params.gitrepositoryurl)
           - name: git-revision
-            value: $(params.gitrevision)
+            value: $(tt.params.gitrevision)
         pipelineRef:
           name: agrocd-trader-pipeline

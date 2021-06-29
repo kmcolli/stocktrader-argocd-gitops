@@ -144,7 +144,7 @@ spec:
     cpuThreshold: 75
     enabled: false
     image:
-      repository: rshrestha13/notification-twitter
+      repository: ibmstocktrader/notification-twitter
       tag: vault
     maxReplicas: 10
     replicas: 1
@@ -199,7 +199,7 @@ spec:
   looper:
     autoscale: false
     cpuThreshold: 75
-    enabled: true
+    enabled: false
     image:
       repository: ibmstocktrader/looper
       tag: latest

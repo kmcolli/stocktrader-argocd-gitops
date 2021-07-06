@@ -99,6 +99,20 @@ spec:
 ```
 
 ## Access and configure SonarQube
+Access your SonarQube using created route. You should see the following login screen:
+
+#loginscrren
+
+Login with default `admin/admin` credentials. On the first login you will be asked to set new admin password.
+
+#password update
+
+It is not recommended to use `admin` account for general purposes. Create new user via Administration > Security > Users.
+
+Relogin to the newly created user, and generate token that will be used by your build pipeline. Go to My Account > Security and generate new token.
+
+# generate-token screen
+
 
 
 

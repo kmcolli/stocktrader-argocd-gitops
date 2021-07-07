@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: sonar-trader-pipeline
+spec:
+  params:
+    - default: 'https://github.com/stocktrader-ops/trader.git'
+      description: The url for the git repository
+      name: git-url
+      type: string
+    - default: master
+      description: 'The git revision (branch, tag, or sha) that should be built'
+      name: git-revision
+      type: string
+  tasks:
+    - name: setup
+      params:
+        - name: git-url
+          value: $(params.git-url)
+        - name: git-revision
+          value: $(params.git-revision)
+      taskRef:
+        kind: Task
+        name: ibm-setup-v2-1-26
+    - name: sonar-scan
+      params:
+        - name: git-url
+          value: $(tasks.setup.results.git-url)
+        - name: git-revision
+          value: $(tasks.setup.results.git-revision)
+        - name: source-dir
+          value: $(tasks.setup.results.source-dir)
+        - name: app-name
+          value: $(tasks.setup.results.app-name)
+      runAfter:
+        - setup
+      taskRef:
+        kind: Task
+        name: ibm-sonar-scan
+    - name: sonar-gate
+      params:
+        - name: app-name
+          value: $(tasks.setup.results.app-name)
+      runAfter:
+        - sonar-scan
+      taskRef:
+        kind: Task
+        name: ibm-sonar-gate

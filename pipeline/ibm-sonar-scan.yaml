@@ -1,0 +1,109 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    app.openshift.io/description: 'Executes sonarscan logic'
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/IBM/ibm-garage-tekton-tasks'
+    description: 'Executes sonarscan logic'
+  name: ibm-sonar-scan
+  labels:
+    version: 0.0.0
+spec:
+  params:
+    - name: git-url
+    - default: master
+      name: git-revision
+    - name: app-name
+      default: ''   
+    - default: /source
+      name: source-dir
+    - default: quay.io/ibmgaragecloud/sonarsource-sonar-scanner-cli
+      name: sonarqube-cli
+    - default: target
+      name: sonarqube-java-bin-path      
+    - default: quay.io/ibmgaragecloud/maven:3.6.3-jdk-11-slim
+      name: maven-image      
+  volumes:
+    - emptyDir: {}
+      name: source
+
+  stepTemplate:
+    name: ''
+    resources: {}
+    volumeMounts:
+      - mountPath: $(params.source-dir)
+        name: source
+  steps:
+    - env:
+        - name: GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: git-credentials
+              optional: true
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: git-credentials
+              optional: true
+      image: quay.io/ibmgaragecloud/alpine-git
+      name: git-clone
+      resources: {}
+      script: |
+        set +x
+        if [[ -n "${GIT_USERNAME}" ]] && [[ -n "${GIT_PASSWORD}" ]]; then
+            git clone "https://${GIT_USERNAME}:${GIT_PASSWORD}@$(echo $(params.git-url) | awk -F 'https://' '{print $2}')" $(params.source-dir)
+        else
+            set -x
+            git clone $(params.git-url) $(params.source-dir)
+        fi
+        set -x
+        cd $(params.source-dir)
+        git checkout $(params.git-revision)
+    - name: build
+      image: $(params.maven-image)
+      script: |
+        mvn compile
+      workingDir: $(params.source-dir)        
+    - name: sonar-scan
+      image: $(params.sonarqube-cli) 
+      env:
+        - name: SONAR_USER_HOME
+          value: $(params.source-dir)
+        - name: SONARQUBE_URL
+          valueFrom:
+            secretKeyRef:
+              key: SONARQUBE_URL
+              name: sonarqube-access
+              optional: true
+        - name: SONARQUBE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: SONARQUBE_TOKEN
+              name: sonarqube-access
+              optional: true
+      resources: {}
+      script: |
+        APP_NAME=$(params.app-name)
+        SONARQUBE_JAVA_BINARIES_PATH="$(params.sonarqube-java-bin-path)"        
+
+        if ! command -v sonar-scanner &> /dev/null
+        then
+            echo "Skipping SonarQube step, no task defined"
+            exit 0
+        fi
+
+        if [ -n "${SONARQUBE_URL}" ]; then
+
+          sonar-scanner \
+          -Dsonar.login=${SONARQUBE_TOKEN} \
+          -Dsonar.host.url=${SONARQUBE_URL} \
+          -Dsonar.projectKey=${APP_NAME} \
+          -Dsonar.java.binaries=${SONARQUBE_JAVA_BINARIES_PATH}
+
+        else
+            echo "Skipping Sonar Qube step for now but include"
+        fi
+      workingDir: $(params.source-dir)

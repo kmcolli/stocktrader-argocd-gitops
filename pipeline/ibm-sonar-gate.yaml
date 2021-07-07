@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    app.openshift.io/description: 'Checks Sonar gate state'
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/IBM/ibm-garage-tekton-tasks'
+    description: 'Checks Sonar gate state'
+  name: ibm-sonar-gate
+  labels:
+    version: 0.0.0
+spec:
+  params:
+    - name: app-name
+      default: ''   
+    - default: quay.io/ibmgaragecloud/alpine-git
+      name: sonarqube-cli
+  stepTemplate:
+    name: ''
+    resources: {}
+  steps:
+    - name: sonar-check-gate
+      image: $(params.sonarqube-cli) 
+      env:
+        - name: SONARQUBE_URL
+          valueFrom:
+            secretKeyRef:
+              key: SONARQUBE_URL
+              name: sonarqube-access
+              optional: true
+        - name: SONARQUBE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: SONARQUBE_TOKEN
+              name: sonarqube-access
+              optional: true
+      resources: {}
+      script: |
+        APP_NAME=$(params.app-name)
+        curl --version
+        sleep 10
+
+        if [ -n "${SONARQUBE_URL}" ]; then
+          response=$(curl --head --write-out %{http_code} --silent --output /dev/null -u ${SONARQUBE_TOKEN} ${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${APP_NAME})
+          echo "Response: $response"
+          while [ $response -eq '404' ]; do
+            sleep 10
+            echo "Trying again to see if scan is done"
+            response=$(curl --head --write-out %{http_code} --silent --output /dev/null -u ${SONARQUBE_TOKEN} ${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${APP_NAME})
+          done
+          response=$(curl --silent -u ${SONARQUBE_TOKEN} ${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${APP_NAME})
+          if echo $response | grep -q "\"projectStatus\":{\"status\":\"ERROR\""; then
+            echo "====== Gate value failed: $response"
+            exit 1;
+          else  
+            echo "====== Gate value passed! ======"
+          fi
+        else
+            echo "Skipping Sonar Qube step"
+        fi

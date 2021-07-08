@@ -1,0 +1,21 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  labels:
+    app: sonar-trader-pipeline
+    triggers.tekton.dev/release: 0.4.0
+  name: sonar-trader-pipeline
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: sonar-trader-pipeline
+      interceptors:
+        - cel:
+            filter: >-
+              header.match('X-GitHub-Event', 'push') && body.ref ==
+              'refs/heads/master'
+      name: sonar-trader-pipeline
+      template:
+        name: sonar-trader-pipeline

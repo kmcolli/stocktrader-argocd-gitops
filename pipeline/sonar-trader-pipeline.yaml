@@ -37,12 +37,3 @@ spec:
       taskRef:
         kind: Task
         name: ibm-sonar-scan
-    - name: sonar-gate
-      params:
-        - name: app-name
-          value: $(tasks.setup.results.app-name)
-      runAfter:
-        - sonar-scan
-      taskRef:
-        kind: Task
-        name: ibm-sonar-gate

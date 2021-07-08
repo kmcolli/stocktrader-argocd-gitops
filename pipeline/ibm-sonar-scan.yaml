@@ -21,7 +21,11 @@ spec:
     - default: quay.io/ibmgaragecloud/sonarsource-sonar-scanner-cli
       name: sonarqube-cli
     - default: target
-      name: sonarqube-java-bin-path      
+      name: sonarqube-java-bin-path
+    - default: 'false'
+      name: gate-wait
+    - default: '300'
+      name: gate-wait-timeout      
     - default: quay.io/ibmgaragecloud/maven:3.6.3-jdk-11-slim
       name: maven-image      
   volumes:
@@ -101,6 +105,8 @@ spec:
           -Dsonar.login=${SONARQUBE_TOKEN} \
           -Dsonar.host.url=${SONARQUBE_URL} \
           -Dsonar.projectKey=${APP_NAME} \
+          -Dsonar.qualitygate.wait=$(params.gate-wait) \
+          -Dsonar.qualitygate.timeout=$(params.gate-wait-timeout) \
           -Dsonar.java.binaries=${SONARQUBE_JAVA_BINARIES_PATH}
 
         else

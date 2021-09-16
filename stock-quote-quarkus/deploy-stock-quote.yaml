@@ -5,7 +5,7 @@ metadata:
   labels:
     app: stock-quote-quarkus
     deployer: argocd
-    release: 0.0.18
+    release: 0.0.11
 spec:
   replicas: 1
   selector:

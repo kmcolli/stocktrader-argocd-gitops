@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: stock-quote-quarkus
-          image: image: image-registry.openshift-image-registry.svc:5000/stock-quote-quarkus/stock-quote-quarkus:basic-auth
+          image: image-registry.openshift-image-registry.svc:5000/stock-quote-quarkus/stock-quote-quarkus:basic-auth
           ports:
             - containerPort: 9080
               protocol: TCP
